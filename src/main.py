@@ -350,10 +350,6 @@ if __name__=='__main__':
                 output_pred = list()
                 for i in range(num_subgraphs):
                     subgraph_info = [new_vertices[i], new_v_label[i], new_degree[i], new_edges[i], new_e_label[i], new_v_neigh[i]]
-                    if len(subgraph_info[0]) < len(query_graph_info[0]):
-                        # According to the paper, if the number of vertices in a candidate substructure is smaller than the number of
-                        # vertices in the query graph, we should skip this candidate substructure
-                        continue
                     subgraph_feat = generate_features(subgraph_info, single_feat_dim)
                     subgraph_feat = subgraph_feat.to(args.device)
                     preprocessed_edgelist = torch.LongTensor(preprocess_data_edge(subgraph_info[0], subgraph_info[3])).to(args.device)
