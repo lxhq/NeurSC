@@ -268,7 +268,7 @@ if __name__=='__main__':
     random.shuffle(train_name_list)
     test_name_list = os.listdir(args.test_folder)
     random.shuffle(test_name_list)
-    save_params(params_save_path+params_save_name, args, len(train_name_list), len(test_name_list))
+    save_params(params_save_path+params_save_name, args)
     flag = 0
 
     if args.model_name == 'basic':
@@ -298,9 +298,9 @@ if __name__=='__main__':
                 query_graph_info = load_graph(args.train_folder + f)
                 query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
                 query_feat = generate_features(query_graph_info, single_feat_dim)
-                query_feat.to(args.device)
+                query_feat = query_feat.to(args.device)
                 true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float)
-                true_value.to(args.device)
+                true_value = true_value.to(args.device)
                 # print(feat)
                 
                 if flag == 0:
@@ -355,7 +355,7 @@ if __name__=='__main__':
                         # vertices in the query graph, we should skip this candidate substructure
                         continue
                     subgraph_feat = generate_features(subgraph_info, single_feat_dim)
-                    subgraph_feat.to(args.device)
+                    subgraph_feat = subgraph_feat.to(args.device)
                     preprocessed_edgelist = torch.LongTensor(preprocess_data_edge(subgraph_info[0], subgraph_info[3])).to(args.device)
 
                     # preprocessed_edgelist = preprocess_data_edge(subgraph_info[0], subgraph_info[3])
@@ -535,9 +535,9 @@ if __name__=='__main__':
         compute_end_time = time.time()
         test_loss = loss_func(sum_pred, true_value)
         q_error_result = q_error(sum_pred, true_value)
-        print(f)
-        print(test_loss)
-        print(q_error_result)
+        # print(f)
+        # print(test_loss)
+        # print(q_error_result)
         with open(result_save_path+result_save_name, 'a') as f1:
             f1.write(f + ' ' + str(q_error_result) + ' ' + str(float(sum_pred))+ ' ' + str(float(true_value)) + ' '
                     + str(filter_end_time - start_time)+ ' ' + str(compute_end_time - start_time) +'\n')
