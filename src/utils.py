@@ -11,6 +11,71 @@ from tqdm import tqdm
 from functools import wraps
 from collections import defaultdict
 
+def load_true_card(true_card_path):
+    true_card = dict()
+    with open(true_card_path, 'r') as f:
+        for line in f.readlines():
+            tokens = line.split(';')
+            name = tokens[0] + '.graph'
+            card = int(tokens[1])
+            true_card[name] = card
+    return true_card
+
+def load_graph(query_file):
+    # data information contains:
+    # return [0: id 1: label 2: degree 3: edge_info 4: edge_label 5: vertex neighbor 6: label_dict]
+    nid = list()
+    nlabel = list()
+    nindeg = list()
+    elabel = list()
+    e_u = list()
+    e_v = list()
+    v_neigh = list()
+    
+    with open(query_file) as f:
+        for line in f.readlines():
+            line = line.strip()
+            if line.startswith('v'):
+                tokens = line.split()
+                id = int(tokens[1])
+                label = int(tokens[2])
+                degree = int(tokens[3])
+                nid.append(id)
+                nlabel.append(label)
+                nindeg.append(degree)
+                v_neigh.append(list())
+            if line.startswith('e'):
+                tokens = line.split()
+                src = int(tokens[1])
+                dst = int(tokens[2])
+                label = 0
+                if len(tokens) > 3:
+                    label = int(tokens[3])
+                elabel.append(label)
+                e_u.append(src)
+                e_v.append(dst)
+                # undirected graph
+                v_neigh[src].append(dst)
+                v_neigh[dst].append(src)
+    p_nid = deepcopy(nid)
+    p_nlabel = deepcopy(nlabel)
+    p_indeg = deepcopy(nindeg)
+    p_edges = [deepcopy(e_u), deepcopy(e_v)]
+    p_elabel = deepcopy(elabel)
+    p_v_neigh = [deepcopy(v_list) for v_list in v_neigh]
+    p_label_dict = defaultdict(list)
+    for i in range(len(p_nlabel)):
+        p_label_dict[p_nlabel[i]].append(i)
+    graph_info = [
+        p_nid,
+        p_nlabel,
+        p_indeg,
+        p_edges,
+        p_elabel,
+        p_v_neigh,
+        p_label_dict
+    ]
+    return graph_info
 
 def load_g_graph(g_file):
     nid = list()
@@ -230,8 +295,9 @@ def preprocess_query2data(sub_vertices, candidate_info):
             try:
                 candidate_list = candidate_info[i+2].split()
                 data_vertex = int(candidate_list[0])
-                new_e_u.append(query_vertex)
-                new_e_v.append(vertices_dict[data_vertex])
+                if data_vertex in sub_vertices:
+                    new_e_u.append(query_vertex)
+                    new_e_v.append(vertices_dict[data_vertex])
             except IndexError:
                 continue
     
@@ -241,7 +307,7 @@ def preprocess_query2data(sub_vertices, candidate_info):
 
 
 
-def save_params(file_position, args):
+def save_params(file_position, args, train_size, test_size):
     with open(file_position, 'w') as f:
         f.write('input feat dim:' + str(args.in_feat) +'\n')
         f.write('hidden dim: '+str(args.hidden_dim)+ '\n')
@@ -252,3 +318,5 @@ def save_params(file_position, args):
         f.write('training ratio: ' + str(args.train_percent) +'\n')
         f.write('train method: '+ str(args.train_method) + '\n')
         f.write('sample method: '+str(args.sample_method)+'\n')
+        f.write('training query number: ' + str(train_size) + '\n')
+        f.write('testing query number: ' + str(test_size) + '\n')

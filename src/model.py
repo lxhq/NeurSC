@@ -7,8 +7,9 @@ from gnn import GIN, GAT
 
 
 class BasicCountNet(nn.Module):
-    def __init__(self, input_feat_dim, query_hidden_dim, data_hidden_dim, out_dim, pooling_method='sumpool', share_net=False):
+    def __init__(self, device, input_feat_dim, query_hidden_dim, data_hidden_dim, out_dim, pooling_method='sumpool', share_net=False):
         super(BasicCountNet, self).__init__()
+        self.device = device
         self.pool_method = pooling_method
         if not share_net:
             self.query_GNN = GIN(input_feat_dim, query_hidden_dim, out_dim)
@@ -27,7 +28,7 @@ class BasicCountNet(nn.Module):
     def pool_operation(self, x):
         # build batch
         num_nodes = x.size(0)
-        batch = torch.from_numpy(np.zeros(num_nodes)).type(torch.LongTensor)
+        batch = torch.from_numpy(np.zeros(num_nodes)).type(torch.LongTensor).to(self.device)
         if self.pool_method == 'sumpool':
             return geo_nn.global_add_pool(x, batch)
         elif self.pool_method == 'meanpool':
@@ -49,8 +50,9 @@ class BasicCountNet(nn.Module):
 
 
 class AttentiveCountNet(nn.Module):
-    def __init__(self, input_feat_dim, query_hidden_dim, data_hidden_dim, out_dim, pooling_method='sumpool', share_net=False):
+    def __init__(self, device, input_feat_dim, query_hidden_dim, data_hidden_dim, out_dim, pooling_method='sumpool', share_net=False):
         super(AttentiveCountNet, self).__init__()
+        self.device = device
         self.pool_method = pooling_method
         if not share_net:
             self.query_GNN = GIN(input_feat_dim, query_hidden_dim, out_dim)
@@ -71,7 +73,7 @@ class AttentiveCountNet(nn.Module):
     def pool_operation(self, x):
         # build batch
         num_nodes = x.size(0)
-        batch = torch.from_numpy(np.zeros(num_nodes)).type(torch.LongTensor)
+        batch = torch.from_numpy(np.zeros(num_nodes)).type(torch.LongTensor).to(self.device)
         if self.pool_method == 'sumpool':
             return geo_nn.global_add_pool(x, batch)
         elif self.pool_method == 'meanpool':

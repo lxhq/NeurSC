@@ -1,0 +1,1 @@
+export LD_LIBRARY_PATH=/home/lxhq/workspace_1/NeurSC/build_with_subgraph/graph:/home/lxhq/workspace_1/NeurSC/build_with_subgraph/utility

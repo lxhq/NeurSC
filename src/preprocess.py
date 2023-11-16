@@ -3,7 +3,7 @@ import time
 from graph_operation import graph_depth
 from copy import deepcopy
 from collections import defaultdict
-
+import random
 
 class SampleSubgraph:
     def __init__(self, query, data_graph):
@@ -300,7 +300,21 @@ def _all_train_and_test(training_percent, name_list):
         test_name_list.extend(potential_names_16[math.floor(len(potential_names_16) * training_percent):])
         return train_name_list, test_name_list
 
-
+def _all_train_and_test_2(training_percent, name_list):
+    query_subset = defaultdict(lambda: [])
+    for name in name_list:
+        tokens = name.split('.')[0].split('_')
+        type = tokens[1]
+        size = int(tokens[2])
+        query_subset[(type, size)].append(name)
+    train_name_list = list()
+    test_name_list = list()
+    for key, value in query_subset.items():
+        random.shuffle(value)
+        sep = math.floor(len(value) * training_percent)
+        train_name_list.extend(value[:sep])
+        test_name_list.extend(value[sep:])
+    return train_name_list, test_name_list
 
 
 def train_and_test(query_vertices_num, training_percent, name_list):
@@ -319,7 +333,7 @@ def train_and_test(query_vertices_num, training_percent, name_list):
     elif query_vertices_num == '32':
         target_string = '_32_'
     elif query_vertices_num == 'all':
-        return _all_train_and_test(training_percent, name_list)
+        return _all_train_and_test_2(training_percent, name_list)
     else:
         raise NotImplementedError('The query vertex number input is not supported')
     potential_names = list()
