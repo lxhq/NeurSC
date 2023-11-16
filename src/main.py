@@ -249,6 +249,8 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
     
     return train_model, filter_model, subgraph_sampler
 
+
+
 if __name__=='__main__':
     graph_file = args.data_graph_path
     data_graph_info = load_graph(graph_file)
@@ -288,17 +290,17 @@ if __name__=='__main__':
         model, filter_model, subgraph_sampler = curriculum_train(graph_file, train_name_list, model, loss_func, args, optimizer)
     elif args.train_method == 'Normal':
         subgraph_dict = dict()
-        candidate_dict = dict()
         for epoch_num in range(args.num_epoch):
             model.train()
             batch_num = 0
             for train_file_count, f in enumerate(train_name_list):
                 optimizer.zero_grad()
-                # query_graph_info = load_graph(f.replace('.graph','.grf').replace('/query_graph/', '/grf_query_graph/'))
                 query_graph_info = load_graph(args.train_folder + f)
                 query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
-                query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
-                true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float).to(args.device)
+                query_feat = generate_features(query_graph_info, single_feat_dim)
+                query_feat.to(args.device)
+                true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float)
+                true_value.to(args.device)
                 # print(feat)
                 
                 if flag == 0:
@@ -315,7 +317,6 @@ if __name__=='__main__':
                 if epoch_num == 0:
                     t_0 = time.time()
                     candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.train_folder + f, graph_file)
-                    candidate_dict[f] = [candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info]
                     t_1 = time.time()
                     # print('filter time: {}s'.format(t_1-t_0))
                     # print(candidate_count)
@@ -335,8 +336,7 @@ if __name__=='__main__':
                 else:
                     new_vertices, new_v_label, new_degree, new_edges, new_e_label, new_v_neigh = subgraph_dict[f]
                     if args.model_name == 'attentive' or args.model_name == 'wasserstein':
-                        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = candidate_dict[f]
-                        # candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.train_folder + f, graph_file)
+                        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.train_folder + f, graph_file)
                 # if 0 in candidate_count:
                 #     print(graph_file)
                 #     continue
@@ -354,7 +354,8 @@ if __name__=='__main__':
                         # According to the paper, if the number of vertices in a candidate substructure is smaller than the number of
                         # vertices in the query graph, we should skip this candidate substructure
                         continue
-                    subgraph_feat = generate_features(subgraph_info, single_feat_dim).to(args.device)
+                    subgraph_feat = generate_features(subgraph_info, single_feat_dim)
+                    subgraph_feat.to(args.device)
                     preprocessed_edgelist = torch.LongTensor(preprocess_data_edge(subgraph_info[0], subgraph_info[3])).to(args.device)
 
                     # preprocessed_edgelist = preprocess_data_edge(subgraph_info[0], subgraph_info[3])
@@ -476,10 +477,9 @@ if __name__=='__main__':
                     mean_loss_update = mean_loss
                 mean_loss_update.backward()
                 optimizer.step()
-            if (epoch_num + 1) % 5 == 0:
-                print('Now at {}th epoch.'.format(epoch_num + 1), flush=True)
-                average_q_error = evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)
-                print('Average q-error on test set is: {}'.format(average_q_error), flush=True)
+            if epoch_num%5 == 0:
+                print('Now at {}th epoch.'.format(epoch_num), flush=True)
+                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
                 # evaluation()
             print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, mean_loss.item()), flush=True)
     else:
@@ -491,7 +491,6 @@ if __name__=='__main__':
     # start evaluation
     model.eval()
     for test_file_count, f in enumerate(test_name_list):
-        # query_graph_info = load_graph(f.replace('.graph','.grf').replace('/query_graph/', '/grf_query_graph/'))
         query_graph_info = load_graph(args.test_folder + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
@@ -536,9 +535,9 @@ if __name__=='__main__':
         compute_end_time = time.time()
         test_loss = loss_func(sum_pred, true_value)
         q_error_result = q_error(sum_pred, true_value)
-        # print(f)
-        # print(test_loss)
-        # print(q_error_result)
+        print(f)
+        print(test_loss)
+        print(q_error_result)
         with open(result_save_path+result_save_name, 'a') as f1:
             f1.write(f + ' ' + str(q_error_result) + ' ' + str(float(sum_pred))+ ' ' + str(float(true_value)) + ' '
                     + str(filter_end_time - start_time)+ ' ' + str(compute_end_time - start_time) +'\n')

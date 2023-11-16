@@ -164,7 +164,6 @@ class Filtering:
 
     def cpp_GQL(self, query_graph_file, data_graph_file):
         num_query_vertices = len(self.pattern[0])
-        # base_command = ['/data/hancwang/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/build/filter/SubgraphMatching.out', '-d', data_graph_file, '-q', query_graph_file, '-filter', 'GQL']        output = subprocess.run(base_command, capture_output=True)
         os.environ['LD_LIBRARY_PATH'] = '/home/lxhq/Documents/workspace_1/NeurSC/build_with_subgraph/graph:/home/lxhq/Documents/workspace_1/NeurSC/build_with_subgraph/utility'
         base_command = ['build_with_subgraph/filter/SubgraphMatching.out', '-d', data_graph_file, '-q', query_graph_file, '-filter', 'GQL']
         output = subprocess.run(base_command, capture_output=True)
@@ -189,8 +188,7 @@ class Filtering:
                 for j in range(len(neighbor_offset)):
                     neighbor_offset[j] = int(neighbor_offset[j])
             elif 'Filter vertices' in baseline_visit[i]:
-                # print(baseline_visit[i])
-                pass
+                print(baseline_visit[i])
         # print(what_we_need)
         for i in range(len(candidate_info)):
             if i%2 == 0:

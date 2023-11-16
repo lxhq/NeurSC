@@ -307,7 +307,7 @@ def preprocess_query2data(sub_vertices, candidate_info):
 
 
 
-def save_params(file_position, args, train_size, test_size):
+def save_params(file_position, args):
     with open(file_position, 'w') as f:
         f.write('input feat dim:' + str(args.in_feat) +'\n')
         f.write('hidden dim: '+str(args.hidden_dim)+ '\n')
@@ -318,5 +318,3 @@ def save_params(file_position, args, train_size, test_size):
         f.write('training ratio: ' + str(args.train_percent) +'\n')
         f.write('train method: '+ str(args.train_method) + '\n')
         f.write('sample method: '+str(args.sample_method)+'\n')
-        f.write('training query number: ' + str(train_size) + '\n')
-        f.write('testing query number: ' + str(test_size) + '\n')
