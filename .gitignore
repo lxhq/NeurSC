@@ -3,7 +3,6 @@ __pycache__/
 saved_models/
 saved_params/
 saved_results/
-.vscode/
 outputs/
 nohup.out
 output.txt
