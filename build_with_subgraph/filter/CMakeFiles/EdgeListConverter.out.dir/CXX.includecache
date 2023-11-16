@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/filter/EdgeListToCSR.cpp
+cassert
+-
+algorithm
+-
+vector
+-
+fstream
+-
+iostream
+-
+sstream
+-
+chrono
+-
+tuple
+-
+random
+-
+

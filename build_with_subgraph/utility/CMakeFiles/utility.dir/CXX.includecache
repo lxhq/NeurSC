@@ -1,0 +1,118 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../configuration/config.h
+
+../configuration/types.h
+cstdint
+-
+stdlib.h
+-
+
+../graph/graph.h
+unordered_map
+-
+iostream
+-
+vector
+-
+set
+-
+configuration/types.h
+../graph/configuration/types.h
+configuration/config.h
+../graph/configuration/config.h
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/bitsetoperation.cpp
+bitsetoperation.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/bitsetoperation.h
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/bitsetoperation.h
+cstdint
+-
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/commandparser.cpp
+commandparser.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/commandparser.h
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/commandparser.h
+string
+-
+algorithm
+-
+vector
+-
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/computesetintersection.cpp
+computesetintersection.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/computesetintersection.h
+cstdint
+-
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/computesetintersection.h
+configuration/types.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/configuration/types.h
+configuration/config.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/configuration/config.h
+immintrin.h
+-
+x86intrin.h
+-
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/graphoperations.cpp
+graphoperations.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/graphoperations.h
+memory.h
+-
+queue
+-
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/graphoperations.h
+graph/graph.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/graph/graph.h
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/intersection_algos.cpp
+intersection_algos.hpp
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/intersection_algos.hpp
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/intersection_algos.hpp
+utils/util.hpp
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/utils/util.hpp
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/utils/util.cpp
+util.hpp
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/utils/util.hpp
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/utility/han/utils/util.hpp
+cstdio
+-
+iostream
+-
+cerrno
+-
+cassert
+-
+cstdlib
+-
+cstdint
+-
+cstring
+-
+vector
+-
+string
+-
+algorithm
+-
+x86intrin.h
+-
+unistd.h
+-
+sys/time.h
+-
+

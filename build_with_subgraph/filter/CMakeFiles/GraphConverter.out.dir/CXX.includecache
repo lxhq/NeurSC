@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*#[ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../configuration/config.h
+
+../configuration/types.h
+cstdint
+-
+stdlib.h
+-
+
+../graph/graph.h
+unordered_map
+-
+iostream
+-
+vector
+-
+set
+-
+configuration/types.h
+../graph/configuration/types.h
+configuration/config.h
+../graph/configuration/config.h
+
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/filter/GraphConverter.cpp
+graph/graph.h
+/home/hancwang/Data/Scalable Neural Subgraph Counting/Related_work/SubgraphMatching-master/filter/graph/graph.h
+
