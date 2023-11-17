@@ -18,10 +18,10 @@
                 "--model_name", "wasserstein", 
                 "--device", "cuda",
                 "--graph_file", "yeast",
-                "--data_graph_path", "data/yeast/yeast.graph", 
-                "--true_card_path", "data/yeast/query_graph_labels.csv", 
-                "--train_folder", "data/yeast/train/",
-                "--test_folder", "data/yeast/test/",
+                "--data_graph_path", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/yeast.graph", 
+                "--true_card_path", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/query_graph_labels.csv", 
+                "--train_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/train/",
+                "--test_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/test/",
                 "--query_vertex_num", "all"
             ]
         }
