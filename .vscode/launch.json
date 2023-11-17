@@ -1,0 +1,29 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "NeurSC",
+            "type": "python",
+            "request": "launch",
+            "program": "src/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true,
+            "args": [
+                "--num_epoch", "1", 
+                "--sample_method", "induced", 
+                "--share_net", "\"\"",
+                "--model_name", "wasserstein", 
+                "--device", "cuda",
+                "--graph_file", "yeast",
+                "--data_graph_path", "data/yeast/yeast.graph", 
+                "--true_card_path", "data/yeast/query_graph_labels.csv", 
+                "--train_folder", "data/yeast/train/",
+                "--test_folder", "data/yeast/test/",
+                "--query_vertex_num", "all"
+            ]
+        }
+    ]
+}
