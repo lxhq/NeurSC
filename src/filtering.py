@@ -164,7 +164,7 @@ class Filtering:
 
     def cpp_GQL(self, query_graph_file, data_graph_file):
         num_query_vertices = len(self.pattern[0])
-        os.environ['LD_LIBRARY_PATH'] = '/home/lxhq/Documents/workspace_1/NeurSC/build_with_subgraph/graph:/home/lxhq/Documents/workspace_1/NeurSC/build_with_subgraph/utility'
+        os.environ['LD_LIBRARY_PATH'] = '{}/build_with_subgraph/graph:{}/build_with_subgraph/utility'.format(os.getcwd(), os.getcwd())
         base_command = ['build_with_subgraph/filter/SubgraphMatching.out', '-d', data_graph_file, '-q', query_graph_file, '-filter', 'GQL']
         output = subprocess.run(base_command, capture_output=True)
         baseline_visit = output.stdout.decode(encoding).split('\n')
