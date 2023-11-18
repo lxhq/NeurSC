@@ -265,9 +265,7 @@ if __name__=='__main__':
     # get training set and test set.
     # train_name_list, test_name_list = train_and_test(args.query_vertex_num, args.train_percent, all_name_list)
     train_name_list = os.listdir(args.train_folder)
-    random.shuffle(train_name_list)
     test_name_list = os.listdir(args.test_folder)
-    random.shuffle(test_name_list)
     save_params(params_save_path+params_save_name, args)
     flag = 0
 
@@ -291,6 +289,7 @@ if __name__=='__main__':
     elif args.train_method == 'Normal':
         subgraph_dict = dict()
         for epoch_num in range(args.num_epoch):
+            epoch_mean_loss = 0
             model.train()
             batch_num = 0
             for train_file_count, f in enumerate(train_name_list):
@@ -436,6 +435,7 @@ if __name__=='__main__':
                         wd_loss_all = -torch.mean(wdiscriminator(out_query_x_loss).clone())
                         # update_wd_loss = torch.cat((update_wd_loss, wd_loss_out.unsqueeze(0)))
                         mean_loss = loss_list.mean()
+                        epoch_mean_loss += mean_loss.item()
                         # wd_loss_all = update_wd_loss.mean()
                         mean_loss_update = (1-args.alpha)*wd_loss_all + args.alpha*mean_loss
                         mean_loss_update.backward()
@@ -453,6 +453,7 @@ if __name__=='__main__':
                     elif batch_num == args.batch_size - 1:
                         loss_list = torch.cat((loss_list, loss.unsqueeze(0)))
                         mean_loss = loss_list.mean()
+                        epoch_mean_loss += mean_loss.item()
                         mean_loss.backward()
                         optimizer.step()
                         batch_num = 0
@@ -464,6 +465,7 @@ if __name__=='__main__':
             # after one epoch, confirm the loss is backpropagated
             if batch_num != 0:
                 mean_loss = loss_list.mean()
+                epoch_mean_loss += mean_loss.item()
                 # wd_loss_all = update_wd_loss.mean()
                 
                 if args.model_name == 'wasserstein':
@@ -477,7 +479,7 @@ if __name__=='__main__':
                 print('Now at {}th epoch.'.format(epoch_num), flush=True)
                 print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
                 # evaluation()
-            print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, mean_loss.item()), flush=True)
+            print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, epoch_mean_loss), flush=True)
     else:
         raise NotImplementedError('The training method {} is not supported'.format(args.train_method))
 
