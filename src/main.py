@@ -11,7 +11,6 @@ from utils import load_graph, load_baseline, generate_features, preprocess_data_
 from filtering import Filtering
 from preprocess import SampleSubgraph, train_and_test
 from model import BasicCountNet, QErrorLoss, QErrorLikeLoss, AttentiveCountNet, WasserstainDiscriminator
-import random
 import sys
 
 warnings.filterwarnings('ignore')
