@@ -10,6 +10,7 @@ from copy import deepcopy
 from tqdm import tqdm
 from functools import wraps
 from collections import defaultdict
+import math
 
 def load_true_card(true_card_path):
     true_card = dict()
@@ -18,7 +19,7 @@ def load_true_card(true_card_path):
             tokens = line.split(';')
             name = tokens[0] + '.graph'
             card = int(tokens[1])
-            true_card[name] = card
+            true_card[name] = math.log2(card)
     return true_card
 
 def load_graph(query_file):

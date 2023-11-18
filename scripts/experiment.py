@@ -34,11 +34,11 @@ def run_train(dataset, epochs, saved_results_name, output_file, full_data_dir):
 
 if __name__ == '__main__':
     dataset = 'yeast'
-    epochs = 100
+    epochs = 150
     full_data_dir = '/home/lxhq/Documents/workspace_1/dataset/ml_data/{}'.format(dataset)
     output_dir = 'outputs/{}/'.format(dataset)
 
-    for idx in range(1):
-        model_name = 'baseline_{}'.format(idx)
+    for idx in range(10):
+        model_name = 'better_performance_mse_log2_scheduler_{}'.format(idx)
         output_file = output_dir + '{}_{}'.format(epochs, model_name) + '.txt'
         run_train(dataset, epochs, model_name, output_file, full_data_dir)

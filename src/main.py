@@ -25,7 +25,7 @@ parser.add_argument('--hidden_dim', type=int, default=128,
                     help='dimension of hidden feature.')
 parser.add_argument('--dropout_ratio', type=float, default=0.2,
                     help='dropout ratio')
-parser.add_argument('--learning_rate', type=float, default=0.001,
+parser.add_argument('--learning_rate', type=float, default=1e-4,
                     help='learning rate for training')
 parser.add_argument('--pooling_method', type=str, default='sumpool',
                     help='pooling method used.')
@@ -92,14 +92,16 @@ with open(result_save_path+result_save_name, 'w') as f_result:
 
 
 def q_error(input_card, true_card):
-    input_card = float(input_card)
-    true_card = float(true_card)
-    return max([max([input_card, 1])/max([true_card, 1]), max([1, true_card])/max([1, input_card])])
+    return input_card - true_card
+    # input_card = float(input_card)
+    # true_card = float(true_card)
+    # return max([max([input_card, 1])/max([true_card, 1]), max([1, true_card])/max([1, input_card])])
 
 
 def evaluation(graph_file, data_list, learned_model, filter_method, sampler, loss_function):
     learned_model.eval()
     average_q_error = list()
+    total_loss = 0
     for test_file_count, f in enumerate(data_list):
         # query_graph_info = load_graph(f.replace('.graph','.grf').replace('/query_graph/', '/grf_query_graph/'))
         query_graph_info = load_graph(args.test_folder + f)
@@ -138,11 +140,13 @@ def evaluation(graph_file, data_list, learned_model, filter_method, sampler, los
         sum_pred = torch.sum(output_pred)
         compute_end_time = time.time()
         test_loss = loss_function(sum_pred, true_value)
+        total_loss += test_loss
         q_error_result = q_error(sum_pred, true_value)
         average_q_error.append(q_error_result)
         if test_file_count != 0 and test_file_count % 50 == 0:
             print("{}/{} evluation is done".format(test_file_count, len(data_list)), flush=True)
-    return sum(average_q_error)/len(average_q_error)
+    # return sum(average_q_error)/len(average_q_error)
+    return total_loss
 
 
 def curriculum_train(graph_file, train_data, train_model, loss_function, args, opt):
@@ -244,7 +248,7 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
                 print(loss_list, flush=True)
         if e_num%5 == 0:
             print('Now at {}th epoch.'.format(e_num), flush=True)
-            print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, train_model, filter_model, subgraph_sampler, loss_func)), flush=True)
+            print('Total squared q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, train_model, filter_model, subgraph_sampler, loss_func)), flush=True)
     
     return train_model, filter_model, subgraph_sampler
 
@@ -279,9 +283,12 @@ if __name__=='__main__':
     else:
         raise NotImplementedError('The model name is not implemented.')
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=5e-4)
-    # loss_func = nn.MSELoss()
+    scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.1)
+    patient_epoch = 50
+    loss_func = nn.MSELoss()
     # loss_func = QErrorLoss()
-    loss_func = QErrorLikeLoss()
+    # loss_func = QErrorLikeLoss()
+    
 
     if args.train_method == 'Curriculum':
         model, filter_model, subgraph_sampler = curriculum_train(graph_file, train_name_list, model, loss_func, args, optimizer)
@@ -476,8 +483,10 @@ if __name__=='__main__':
                 optimizer.step()
             if epoch_num%5 == 0:
                 print('Now at {}th epoch.'.format(epoch_num), flush=True)
-                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
+                print('Total squared q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
                 # evaluation()
+            if scheduler != None and epoch_num % patient_epoch == 0:
+                scheduler.step()
             print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, epoch_mean_loss), flush=True)
     else:
         raise NotImplementedError('The training method {} is not supported'.format(args.train_method))
@@ -491,7 +500,7 @@ if __name__=='__main__':
         query_graph_info = load_graph(args.test_folder + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
-        true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float)
+        true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float).to(args.device)
 
         filter_model.update_query(query_graph_info)
         subgraph_sampler.update_query(query_graph_info)
