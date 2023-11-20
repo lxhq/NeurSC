@@ -283,6 +283,7 @@ if __name__=='__main__':
     else:
         raise NotImplementedError('The model name is not implemented.')
     optimizer = torch.optim.Adam(model.parameters(), lr=args.learning_rate, weight_decay=5e-4)
+    scheduler = None
     scheduler = torch.optim.lr_scheduler.ExponentialLR(optimizer=optimizer, gamma=0.1)
     patient_epoch = 50
     loss_func = nn.MSELoss()
@@ -485,8 +486,9 @@ if __name__=='__main__':
                 print('Now at {}th epoch.'.format(epoch_num), flush=True)
                 print('Total squared q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
                 # evaluation()
-            if scheduler != None and epoch_num % patient_epoch == 0:
+            if scheduler != None and epoch_num != 0 and epoch_num % patient_epoch == 0:
                 scheduler.step()
+                print('Scheduler is steped')
             print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, epoch_mean_loss), flush=True)
     else:
         raise NotImplementedError('The training method {} is not supported'.format(args.train_method))
@@ -545,7 +547,7 @@ if __name__=='__main__':
         # print(test_loss)
         # print(q_error_result)
         with open(result_save_path+result_save_name, 'a') as f1:
-            f1.write(f + ' ' + str(q_error_result) + ' ' + str(float(sum_pred))+ ' ' + str(float(true_value)) + ' '
+            f1.write(f + ' ' + str(float(q_error_result)) + ' ' + str(float(sum_pred))+ ' ' + str(float(true_value)) + ' '
                     + str(filter_end_time - start_time)+ ' ' + str(compute_end_time - start_time) +'\n')
         if test_file_count != 0 and test_file_count % 50 == 0:
             print("{}/{} evluation is done".format(test_file_count, len(test_name_list)), flush=True)

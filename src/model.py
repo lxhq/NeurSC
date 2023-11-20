@@ -67,7 +67,7 @@ class AttentiveCountNet(nn.Module):
             nn.Linear(out_dim, out_dim//2),
             nn.ReLU(),
             nn.Linear(out_dim//2, 1),
-            nn.ReLU()
+            # nn.ReLU()
         )
 
     def pool_operation(self, x):

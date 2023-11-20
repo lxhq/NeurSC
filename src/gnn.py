@@ -21,6 +21,7 @@ class GIN(nn.Module):
 
     def forward(self, in_feat, edge_list):
         x = self.GIN_layer_1(in_feat, edge_list)
+        x = nn.functional.dropout(x, p=0.2, training=self.training)
         x = self.GIN_layer_2(x, edge_list)
 
         return x
