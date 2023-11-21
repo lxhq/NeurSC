@@ -188,8 +188,7 @@ class Filtering:
                 for j in range(len(neighbor_offset)):
                     neighbor_offset[j] = int(neighbor_offset[j])
             elif 'Filter vertices' in baseline_visit[i]:
-                # print(baseline_visit[i])
-                pass
+                print(baseline_visit[i])
         # print(what_we_need)
         for i in range(len(candidate_info)):
             if i%2 == 0:

@@ -6,12 +6,12 @@ import argparse
 import os
 import time
 import math
-# from tqdm import tqdm
+from tqdm import tqdm
 from utils import load_graph, load_baseline, generate_features, preprocess_data_edge, save_params, preprocess_query2data, load_true_card
 from filtering import Filtering
 from preprocess import SampleSubgraph, train_and_test
 from model import BasicCountNet, QErrorLoss, QErrorLikeLoss, AttentiveCountNet, WasserstainDiscriminator
-import sys
+
 
 warnings.filterwarnings('ignore')
 encoding = 'utf-8'
@@ -47,44 +47,41 @@ parser.add_argument('--share_net', type=bool, default=False,
                     help='whether share parameters between two networks')
 parser.add_argument('--coarsen_data', type=bool, default=False,
                     help='whether coarsen the sampled data graph.')
+parser.add_argument('--graph_file', type=str, default='eu2005',
+                    help='the graph file name')
+parser.add_argument('--train_folder', type=str, default='data/yeast/train/',
+                    help='The folder contains all training graphs')
+parser.add_argument('--test_folder', type=str, default='data/yeast/test/',
+                    help='The folder contains all testing graphs')
+parser.add_argument('--data_graph_path', type=str, default='data/yeast/raw/data_graph/yeast.graph',
+                    help='The path to the data graph')
+parser.add_argument('--true_card_path', type=str, default='data/yeast/card.csv',
+                    help='The path to the csv file records all true cards')
+parser.add_argument('--query_vertex_num', type=str, default='all',
+                    help='number of query vertices')
+parser.add_argument('--saved_name', type=str, default='dummy',
+                    help='a self defined name to identify saved files')
 parser.add_argument('--correspondence', type=bool, default='False',
                     help='how to get correspondence pair')
 parser.add_argument('--model_name', type=str, default='basic',
                     help='name of training model')
 parser.add_argument('--device', type=str, default='cpu',
                     help='the device used for training')
-parser.add_argument('--graph_file', type=str, default='eu2005',
-                    help='the graph file name')
-parser.add_argument('--train_folder', type=str, default='data/yeast/train/',
-                    help='the device used for training')
-parser.add_argument('--test_folder', type=str, default='data/yeast/test/',
-                    help='the device used for training')
-parser.add_argument('--data_graph_path', type=str, default='data/yeast/raw/data_graph/yeast.graph',
-                    help='the device used for training')
-parser.add_argument('--true_card_path', type=str, default='data/yeast/card.csv',
-                    help='the device used for training')
-parser.add_argument('--query_vertex_num', type=str, default='all',
-                    help='number of query vertices')
-parser.add_argument('--saved_name', type=str, default='',
-                    help='a self defined name to identify saved files')
-parser.add_argument('--stdout_file', type=str, default='output.txt',
-                    help='redirect all outputs into this file')
 
 args = parser.parse_args()
-# torch.autograd.set_detect_anomaly(True)
-output_file = open(args.stdout_file, 'w')
-sys.stdout = output_file
-print(args, flush=True)
+torch.autograd.set_detect_anomaly(True)
+print(args)
 model_save_path = 'saved_models/'
 result_save_path = 'saved_results/'
 params_save_path = 'saved_params/'
 current_time = time.strftime('%Y-%m-%d_%H:%M:%S')
-print(current_time, flush=True)
+print(current_time)
 save_name = args.graph_file+ '_' + args.model_name+'_' + args.query_vertex_num +'_'+ args.pooling_method + '_' + str(args.num_epoch) + '_' + args.saved_name + '_' +current_time
 model_save_name = save_name + '.pt'
 result_save_name = save_name + '.txt'
 params_save_name = save_name + '.txt'
-print('pytorh cuda version: ', torch.version.cuda, flush=True)
+save_params(params_save_path+params_save_name, args)
+print(torch.version.cuda)
 if not torch.cuda.is_available():
     args.device = 'cpu'
 with open(result_save_path+result_save_name, 'w') as f_result:
@@ -100,8 +97,7 @@ def q_error(input_card, true_card):
 def evaluation(graph_file, data_list, learned_model, filter_method, sampler, loss_function):
     learned_model.eval()
     average_q_error = list()
-    for test_file_count, f in enumerate(data_list):
-        # query_graph_info = load_graph(f.replace('.graph','.grf').replace('/query_graph/', '/grf_query_graph/'))
+    for f in data_list:
         query_graph_info = load_graph(args.test_folder + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
@@ -140,8 +136,6 @@ def evaluation(graph_file, data_list, learned_model, filter_method, sampler, los
         test_loss = loss_function(sum_pred, true_value)
         q_error_result = q_error(sum_pred, true_value)
         average_q_error.append(q_error_result)
-        if test_file_count != 0 and test_file_count % 50 == 0:
-            print("{}/{} evluation is done".format(test_file_count, len(data_list)), flush=True)
     return sum(average_q_error)/len(average_q_error)
 
 
@@ -157,7 +151,7 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
     epoch_20 = math.floor(0.1*num_epoch)
     epoch_50 = math.floor(0.3*num_epoch)
     epoch_70 = math.floor(0.7*num_epoch)
-    for e_num in range(args.num_epoch):
+    for e_num in tqdm(range(args.num_epoch)):
         # set the batch size and the query selection criterion.
         batch_num = 0
         query_flag = 'all'
@@ -240,11 +234,11 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
             mean_loss.backward()
             opt.step()
             if e_num%5 == 0:
-                print('Current train loss is:', flush=True)
-                print(loss_list, flush=True)
+                print('Current train loss is:')
+                print(loss_list)
         if e_num%5 == 0:
-            print('Now at {}th epoch.'.format(e_num), flush=True)
-            print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, train_model, filter_model, subgraph_sampler, loss_func)), flush=True)
+            print('Now at {}th epoch.'.format(e_num))
+            print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, train_model, filter_model, subgraph_sampler, loss_func)))
     
     return train_model, filter_model, subgraph_sampler
 
@@ -256,25 +250,21 @@ if __name__=='__main__':
     single_feat_dim = args.in_feat//4
     true_card_file = args.true_card_path
     if args.graph_file in ['yeast', 'youtube', 'eu2005', 'wordnet'] and args.query_vertex_num in ['12','16', '24', '32', 'all']:
-        # baseline_dict = load_iso_baseline('../iso_cardinality/'+args.graph_file+'/', args.query_path.replace('/grf_query_graph/', '/query_graph/'))
         baseline_dict = load_true_card(true_card_file)
     else:
         baseline_dict = load_true_card(true_card_file)
-    # all_name_list = list(baseline_dict.keys())
     # get training set and test set.
-    # train_name_list, test_name_list = train_and_test(args.query_vertex_num, args.train_percent, all_name_list)
     train_name_list = os.listdir(args.train_folder)
     test_name_list = os.listdir(args.test_folder)
-    save_params(params_save_path+params_save_name, args)
     flag = 0
 
     if args.model_name == 'basic':
-        model = BasicCountNet(args.device, args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
+        model = BasicCountNet(args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
     elif args.model_name == 'attentive':
-        model = AttentiveCountNet(args.device, args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
+        model = AttentiveCountNet(args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
     elif args.model_name == 'wasserstein':
-        model = AttentiveCountNet(args.device, args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
-        wdiscriminator = WasserstainDiscriminator(2*args.out_dim).to(args.device)
+        model = AttentiveCountNet(args.in_feat, args.hidden_dim, args.hidden_dim, args.out_dim, args.pooling_method).to(args.device)
+        wdiscriminator = WasserstainDiscriminator(2*args.out_dim)
         optimizer_wd = torch.optim.Adam(wdiscriminator.parameters(), lr=args.learning_rate, weight_decay=5e-4)
     else:
         raise NotImplementedError('The model name is not implemented.')
@@ -287,18 +277,17 @@ if __name__=='__main__':
         model, filter_model, subgraph_sampler = curriculum_train(graph_file, train_name_list, model, loss_func, args, optimizer)
     elif args.train_method == 'Normal':
         subgraph_dict = dict()
-        for epoch_num in range(args.num_epoch):
-            epoch_mean_loss = 0
+        for epoch_num in tqdm(range(args.num_epoch)):
             model.train()
             batch_num = 0
-            for train_file_count, f in enumerate(train_name_list):
+            for f in tqdm(train_name_list):
                 optimizer.zero_grad()
                 query_graph_info = load_graph(args.train_folder + f)
                 query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
                 query_feat = generate_features(query_graph_info, single_feat_dim)
-                query_feat = query_feat.to(args.device)
+                query_feat.to(args.device)
                 true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float)
-                true_value = true_value.to(args.device)
+                true_value.to(args.device)
                 # print(feat)
                 
                 if flag == 0:
@@ -349,7 +338,7 @@ if __name__=='__main__':
                 for i in range(num_subgraphs):
                     subgraph_info = [new_vertices[i], new_v_label[i], new_degree[i], new_edges[i], new_e_label[i], new_v_neigh[i]]
                     subgraph_feat = generate_features(subgraph_info, single_feat_dim)
-                    subgraph_feat = subgraph_feat.to(args.device)
+                    subgraph_feat.to(args.device)
                     preprocessed_edgelist = torch.LongTensor(preprocess_data_edge(subgraph_info[0], subgraph_info[3])).to(args.device)
 
                     # preprocessed_edgelist = preprocess_data_edge(subgraph_info[0], subgraph_info[3])
@@ -434,7 +423,6 @@ if __name__=='__main__':
                         wd_loss_all = -torch.mean(wdiscriminator(out_query_x_loss).clone())
                         # update_wd_loss = torch.cat((update_wd_loss, wd_loss_out.unsqueeze(0)))
                         mean_loss = loss_list.mean()
-                        epoch_mean_loss += mean_loss.item()
                         # wd_loss_all = update_wd_loss.mean()
                         mean_loss_update = (1-args.alpha)*wd_loss_all + args.alpha*mean_loss
                         mean_loss_update.backward()
@@ -452,19 +440,14 @@ if __name__=='__main__':
                     elif batch_num == args.batch_size - 1:
                         loss_list = torch.cat((loss_list, loss.unsqueeze(0)))
                         mean_loss = loss_list.mean()
-                        epoch_mean_loss += mean_loss.item()
                         mean_loss.backward()
                         optimizer.step()
                         batch_num = 0
                     else:
                         raise NotImplementedError('Somewhere is wrong!')
-                if train_file_count != 0 and train_file_count % 100 == 0:
-                    print("{}/{} training file is done".format(train_file_count, len(train_name_list)), flush=True)
-
             # after one epoch, confirm the loss is backpropagated
             if batch_num != 0:
                 mean_loss = loss_list.mean()
-                epoch_mean_loss += mean_loss.item()
                 # wd_loss_all = update_wd_loss.mean()
                 
                 if args.model_name == 'wasserstein':
@@ -475,10 +458,9 @@ if __name__=='__main__':
                 mean_loss_update.backward()
                 optimizer.step()
             if epoch_num%5 == 0:
-                print('Now at {}th epoch.'.format(epoch_num), flush=True)
-                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
+                print('Now at {}th epoch.'.format(epoch_num))
+                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)))
                 # evaluation()
-            print('Epoch {}/{} is done. Loss: {}'.format(epoch_num + 1, args.num_epoch, epoch_mean_loss), flush=True)
     else:
         raise NotImplementedError('The training method {} is not supported'.format(args.train_method))
 
@@ -487,7 +469,7 @@ if __name__=='__main__':
 
     # start evaluation
     model.eval()
-    for test_file_count, f in enumerate(test_name_list):
+    for f in test_name_list:
         query_graph_info = load_graph(args.test_folder + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
@@ -500,7 +482,7 @@ if __name__=='__main__':
         candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.test_folder + f, graph_file)
         filter_end_time = time.time()
         if 0 in candidate_count:
-            print('{} shoule have 0 subgraph in data graph.'.format(f), flush=True)
+            print('{} shoule have 0 subgraph in data graph.'.format(f))
             continue
         
         if args.sample_method == 'start':
@@ -532,12 +514,9 @@ if __name__=='__main__':
         compute_end_time = time.time()
         test_loss = loss_func(sum_pred, true_value)
         q_error_result = q_error(sum_pred, true_value)
-        # print(f)
-        # print(test_loss)
-        # print(q_error_result)
+        print(f)
+        print(test_loss)
+        print(q_error_result)
         with open(result_save_path+result_save_name, 'a') as f1:
             f1.write(f + ' ' + str(q_error_result) + ' ' + str(float(sum_pred))+ ' ' + str(float(true_value)) + ' '
                     + str(filter_end_time - start_time)+ ' ' + str(compute_end_time - start_time) +'\n')
-        if test_file_count != 0 and test_file_count % 50 == 0:
-            print("{}/{} evluation is done".format(test_file_count, len(test_name_list)), flush=True)
-    output_file.close()
