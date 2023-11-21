@@ -29,7 +29,7 @@ def get_command(dataset, epochs, saved_results_name, full_data_dir):
 
 if __name__ == '__main__':
     dataset = 'yeast'
-    epochs = [30, 50, 70, 90, 100, 120, 140, 150]
+    epochs = [30, 60, 90, 120, 150]
     full_data_dir = '/home/lxhq/Documents/workspace_1/dataset/ml_data/{}'.format(dataset)
     processes = []
     for epoch in epochs:
