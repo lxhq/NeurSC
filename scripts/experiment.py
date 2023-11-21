@@ -38,11 +38,11 @@ if __name__ == '__main__':
     epochs = 150
     full_data_dir = '/home/lxhq/Documents/workspace_1/dataset/ml_data/{}'.format(dataset)
     output_dir = 'outputs/{}/'.format(dataset)
-    lrs = [5e-3, 1e-3, 8e-4, 5e-4, 3e-4, 1e-4]
+    lrs = [5e-3, 1e-3, 5e-4, 1e-4]
 
     processes = []
     for lr in lrs:
-        model_name = 'better_performance_mse_log2_dropout_scheduler_lrs_{}'.format(lr)
+        model_name = 'better_performance_mse_log2_dropout_scheduler_lr_{}'.format(lr)
         output_file = output_dir + '{}_{}'.format(epochs, model_name) + '.txt'
         command = get_command(dataset, epochs, model_name, output_file, full_data_dir, lr)
         processes.append(execute_binary(command))

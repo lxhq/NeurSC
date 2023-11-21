@@ -295,10 +295,13 @@ def preprocess_query2data(sub_vertices, candidate_info):
                     new_e_v.append(vertices_dict[data_vertex])
             try:
                 candidate_list = candidate_info[i+2].split()
-                data_vertex = int(candidate_list[0])
-                if data_vertex in sub_vertices:
-                    new_e_u.append(query_vertex)
-                    new_e_v.append(vertices_dict[data_vertex])
+                count = 0
+                data_vertex = int(candidate_list[count])
+                while data_vertex not in vertices_dict:
+                    count += 1
+                    data_vertex = int(candidate_list[count])
+                new_e_u.append(query_vertex)
+                new_e_v.append(vertices_dict[data_vertex])
             except IndexError:
                 continue
     

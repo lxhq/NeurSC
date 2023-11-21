@@ -84,6 +84,8 @@ save_name = args.graph_file+ '_' + args.model_name+'_' + args.query_vertex_num +
 model_save_name = save_name + '.pt'
 result_save_name = save_name + '.txt'
 params_save_name = save_name + '.txt'
+save_params(params_save_path+params_save_name, args)
+
 print('pytorh cuda version: ', torch.version.cuda, flush=True)
 if not torch.cuda.is_available():
     args.device = 'cpu'
