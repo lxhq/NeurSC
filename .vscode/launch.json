@@ -19,6 +19,7 @@
                 "--true_card_path", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/query_graph_labels.csv", 
                 "--train_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/train/",
                 "--test_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/test/",
+                "--saved_name", "dummy"
             ]
         }
     ]
