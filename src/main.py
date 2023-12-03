@@ -7,7 +7,7 @@ import os
 import time
 import math
 from tqdm import tqdm
-from utils import load_graph, load_baseline, generate_features, preprocess_data_edge, save_params, preprocess_query2data, load_true_card
+from utils import load_graph, load_baseline, generate_features, preprocess_data_edge, save_params, preprocess_query2data, load_true_card, read_csv
 from filtering import Filtering
 from preprocess import SampleSubgraph, train_and_test
 from model import BasicCountNet, QErrorLoss, QErrorLikeLoss, AttentiveCountNet, WasserstainDiscriminator
@@ -49,13 +49,15 @@ parser.add_argument('--coarsen_data', type=bool, default=False,
                     help='whether coarsen the sampled data graph.')
 parser.add_argument('--graph_file', type=str, default='eu2005',
                     help='the graph file name')
-parser.add_argument('--train_folder', type=str, default='data/yeast/train/',
-                    help='The folder contains all training graphs')
-parser.add_argument('--test_folder', type=str, default='data/yeast/test/',
-                    help='The folder contains all testing graphs')
+parser.add_argument('--train_names', type=str, default='data/yeast/train.csv',
+                    help='The csv file records all names of the training graph')
+parser.add_argument('--test_names', type=str, default='data/yeast/test.csv',
+                    help='The csv file records all names of the testing graphs')
+parser.add_argument('--query_graph_dir', type=str, default='data/yeast/query_graph/',
+                    help='The folder contains all query graphs')
 parser.add_argument('--data_graph_path', type=str, default='data/yeast/raw/data_graph/yeast.graph',
                     help='The path to the data graph')
-parser.add_argument('--true_card_path', type=str, default='data/yeast/card.csv',
+parser.add_argument('--true_card_path', type=str, default='data/yeast/query_graph_cards.csv',
                     help='The path to the csv file records all true cards')
 parser.add_argument('--query_vertex_num', type=str, default='all',
                     help='number of query vertices')
@@ -98,7 +100,7 @@ def evaluation(graph_file, data_list, learned_model, filter_method, sampler, los
     learned_model.eval()
     average_q_error = list()
     for f in data_list:
-        query_graph_info = load_graph(args.test_folder + f)
+        query_graph_info = load_graph(args.query_graph_dir + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
         true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float).to(args.device)
@@ -106,7 +108,7 @@ def evaluation(graph_file, data_list, learned_model, filter_method, sampler, los
         filter_method.update_query(query_graph_info)
         sampler.update_query(query_graph_info)
         start_time = time.time()
-        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_method.cpp_GQL(args.test_folder + f, graph_file)
+        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_method.cpp_GQL(args.query_graph_dir + f, graph_file)
         filter_end_time = time.time()
         if 0 in candidate_count:
             continue
@@ -254,8 +256,8 @@ if __name__=='__main__':
     else:
         baseline_dict = load_true_card(true_card_file)
     # get training set and test set.
-    train_name_list = os.listdir(args.train_folder)
-    test_name_list = os.listdir(args.test_folder)
+    train_name_list = read_csv(args.train_names)
+    test_name_list = read_csv(args.test_names)
     flag = 0
 
     if args.model_name == 'basic':
@@ -282,7 +284,7 @@ if __name__=='__main__':
             batch_num = 0
             for f in tqdm(train_name_list):
                 optimizer.zero_grad()
-                query_graph_info = load_graph(args.train_folder + f)
+                query_graph_info = load_graph(args.query_graph_dir + f)
                 query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
                 query_feat = generate_features(query_graph_info, single_feat_dim)
                 query_feat.to(args.device)
@@ -303,7 +305,7 @@ if __name__=='__main__':
                 
                 if epoch_num == 0:
                     t_0 = time.time()
-                    candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.train_folder + f, graph_file)
+                    candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.query_graph_dir + f, graph_file)
                     t_1 = time.time()
                     # print('filter time: {}s'.format(t_1-t_0))
                     # print(candidate_count)
@@ -323,7 +325,7 @@ if __name__=='__main__':
                 else:
                     new_vertices, new_v_label, new_degree, new_edges, new_e_label, new_v_neigh = subgraph_dict[f]
                     if args.model_name == 'attentive' or args.model_name == 'wasserstein':
-                        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.train_folder + f, graph_file)
+                        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.query_graph_dir + f, graph_file)
                 # if 0 in candidate_count:
                 #     print(graph_file)
                 #     continue
@@ -470,7 +472,7 @@ if __name__=='__main__':
     # start evaluation
     model.eval()
     for f in test_name_list:
-        query_graph_info = load_graph(args.test_folder + f)
+        query_graph_info = load_graph(args.query_graph_dir + f)
         query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
         query_feat = generate_features(query_graph_info, single_feat_dim).to(args.device)
         true_value = torch.tensor(int(baseline_dict[f]), dtype=torch.float)
@@ -479,7 +481,7 @@ if __name__=='__main__':
         subgraph_sampler.update_query(query_graph_info)
         start_time = time.time()
         # candidates, candidate_count = filter_model.GQL_filter()
-        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.test_folder + f, graph_file)
+        candidates, candidate_count, induced_subgraph_list, neighbor_offset, candidate_info = filter_model.cpp_GQL(args.query_graph_dir + f, graph_file)
         filter_end_time = time.time()
         if 0 in candidate_count:
             print('{} shoule have 0 subgraph in data graph.'.format(f))

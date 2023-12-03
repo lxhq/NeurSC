@@ -21,6 +21,13 @@ def load_true_card(true_card_path):
             true_card[name] = card
     return true_card
 
+def read_csv(path):
+    res = []
+    with open(path, 'r') as file:
+        for line in file.readlines():
+            res.append(line.strip())
+    return res
+
 def load_graph(query_file):
     # data information contains:
     # return [0: id 1: label 2: degree 3: edge_info 4: edge_label 5: vertex neighbor 6: label_dict]

@@ -15,10 +15,11 @@
                 "--num_epoch", "1", 
                 "--model_name", "wasserstein", 
                 "--graph_file", "yeast",
-                "--data_graph_path", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/yeast.graph", 
-                "--true_card_path", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/query_graph_labels.csv", 
-                "--train_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/train/",
-                "--test_folder", "/home/lxhq/Documents/workspace_1/dataset/ml_data/yeast/test/",
+                "--data_graph_path", "/home/ubuntu/Documents/workspace/dataset/yeast/data_graph/yeast.graph", 
+                "--true_card_path", "/home/ubuntu/Documents/workspace/dataset/yeast/query_graph_cards.csv", 
+                "--train_names", "/home/ubuntu/Documents/workspace/dataset/yeast/train.csv",
+                "--test_names", "/home/ubuntu/Documents/workspace/dataset/yeast/test.csv",
+                "--query_graph_dir", "/home/ubuntu/Documents/workspace/dataset/yeast/query_graph/",
                 "--saved_name", "dummy"
             ]
         }
