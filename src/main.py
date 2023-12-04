@@ -261,6 +261,7 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
 if __name__=='__main__':
     graph_file = args.data_graph_path
     data_graph_info = load_graph(graph_file)
+    print('Load data graph is done', flush=True)
     single_feat_dim = args.in_feat//4
     true_card_file = args.true_card_path
     if args.graph_file in ['yeast', 'youtube', 'eu2005', 'wordnet'] and args.query_vertex_num in ['12','16', '24', '32', 'all']:
@@ -470,9 +471,10 @@ if __name__=='__main__':
                         batch_num = 0
                     else:
                         raise NotImplementedError('Somewhere is wrong!')
-                if train_file_count != 0 and train_file_count % 100 == 0:
+                if args.graph_file == 'yeast' and train_file_count != 0 and train_file_count % 100 == 0:
                     print("{}/{} training file is done".format(train_file_count, len(train_name_list)), flush=True)
-
+                if args.graph_file != 'yeast' and train_file_count != 0 and train_file_count % 10 == 0:
+                    print("{}/{} training file is done".format(train_file_count, len(train_name_list)), flush=True)
             # after one epoch, confirm the loss is backpropagated
             if batch_num != 0:
                 mean_loss = loss_list.mean()

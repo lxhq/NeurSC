@@ -17,12 +17,12 @@
                 "--share_net", "\"\"",
                 "--model_name", "wasserstein", 
                 "--device", "cuda",
-                "--graph_file", "yeast",
-                "--data_graph_path", "/home/ubuntu/Documents/workspace/dataset/yeast/data_graph/yeast.graph", 
-                "--true_card_path", "/home/ubuntu/Documents/workspace/dataset/yeast/query_graph_cards.csv", 
-                "--train_names", "/home/ubuntu/Documents/workspace/dataset/yeast/train.csv",
-                "--test_names", "/home/ubuntu/Documents/workspace/dataset/yeast/test.csv",
-                "--query_graph_dir", "/home/ubuntu/Documents/workspace/dataset/yeast/query_graph/",
+                "--graph_file", "youtube",
+                "--data_graph_path", "/home/lxhq/Documents/workspace/dataset/youtube/data_graph/youtube.graph", 
+                "--true_card_path", "/home/lxhq/Documents/workspace/dataset/youtube/query_graph_cards.csv", 
+                "--train_names", "/home/lxhq/Documents/workspace/dataset/youtube/train.csv",
+                "--test_names", "/home/lxhq/Documents/workspace/dataset/youtube/test.csv",
+                "--query_graph_dir", "/home/lxhq/Documents/workspace/dataset/youtube/query_graph/",
                 "--query_vertex_num", "all"
             ]
         }
