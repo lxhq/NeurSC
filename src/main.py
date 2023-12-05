@@ -153,7 +153,7 @@ def curriculum_train(graph_file, train_data, train_model, loss_function, args, o
     epoch_20 = math.floor(0.1*num_epoch)
     epoch_50 = math.floor(0.3*num_epoch)
     epoch_70 = math.floor(0.7*num_epoch)
-    for e_num in tqdm(range(args.num_epoch)):
+    for e_num in tqdm(range(args.num_epoch), disable=True):
         # set the batch size and the query selection criterion.
         batch_num = 0
         query_flag = 'all'
@@ -279,10 +279,14 @@ if __name__=='__main__':
         model, filter_model, subgraph_sampler = curriculum_train(graph_file, train_name_list, model, loss_func, args, optimizer)
     elif args.train_method == 'Normal':
         subgraph_dict = dict()
-        for epoch_num in tqdm(range(args.num_epoch)):
+        for epoch_num in tqdm(range(args.num_epoch), disable=True):
             model.train()
             batch_num = 0
-            for f in tqdm(train_name_list):
+            training_count = 0
+            for f in tqdm(train_name_list, disable=True):
+                training_count += 1
+                if training_count % 10 == 0:
+                    print('{} / {} is done'.format(training_count, len(train_name_list)), flush=True)
                 optimizer.zero_grad()
                 query_graph_info = load_graph(args.query_graph_dir + f)
                 query_edge_list = torch.LongTensor(query_graph_info[3]).to(args.device)
@@ -459,9 +463,10 @@ if __name__=='__main__':
                     mean_loss_update = mean_loss
                 mean_loss_update.backward()
                 optimizer.step()
+            print('epoch {} is done.'.format(epoch_num), flush=True)
             if epoch_num%5 == 0:
                 print('Now at {}th epoch.'.format(epoch_num))
-                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)))
+                print('Average q-error on test set is: {}'.format(evaluation(graph_file, test_name_list, model, filter_model, subgraph_sampler, loss_func)), flush=True)
                 # evaluation()
     else:
         raise NotImplementedError('The training method {} is not supported'.format(args.train_method))
